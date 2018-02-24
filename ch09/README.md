@@ -1,4 +1,4 @@
-# 9 章 OpenShiftfor Developers
+# 9 章 OpenShift for Developers
 
 各節でチュートリアルに利用するオブジェクトファイルが含まれます。
 
