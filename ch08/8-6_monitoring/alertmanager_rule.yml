@@ -1,0 +1,27 @@
+groups:
+- name: example-rules
+  interval: 30s # defaults to global interval
+  rules:
+  - alert: Node Down
+    expr: up{job="kubernetes-nodes"} < 3
+    annotations:
+      miqTarget: "ContainerNode"
+      severity: "HIGH"
+      message: "{{ '{{' }}{{ '$labels.instance' }}{{ '}}' }} is down"
+  - alert: "Over 10 Pods running"
+    expr: sum(kubelet_running_pod_count) > 10
+    annotations:
+      miqTarget: "ExtManagementSystem"  
+      severity: "ERROR"
+      url: "https://www.example.com/too_many_pods_fixing_instructions"
+      message: "Too many running pods"
+  - alert: "Node CPU Usage"
+    expr: (100 - (avg by (instance) (irate(node_cpu{app="prometheus-node-exporter",mode="idle"}[5m])) * 100)) > 3
+    for: 30s
+    labels:
+      severity: "ERROR"
+    annotations:
+      miqTarget: "ExtManagementSystem"
+      severity: "ERROR"
+      url: "https://www.example.com/too_many_pods_fixing_instructions"
+      message: "{{$labels.instance}}: CPU usage is above 4% (current value is: {{ $value }})"

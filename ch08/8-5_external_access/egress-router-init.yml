@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: egress-1
+  labels:
+    name: egress-1
+  annotations:
+    pod.network.openshift.io/assign-macvlan: "true"
+spec:
+  initContainers:
+  - name: egress-router
+    image: openshift3/ose-egress-router
+    securityContext:
+      privileged: true
+    env:
+    - name: EGRESS_SOURCE 
+      value: 192.168.1.10
+    - name: EGRESS_GATEWAY 
+      value: 192.168.1.1
+    - name: EGRESS_DESTINATION 
+      value: 10.64.200.105
+    - name: EGRESS_ROUTER_MODE 
+      value: init
+  containers:
+  - name: egress-router-wait
+    image: openshift3/ose-pod
+  nodeSelector:
+    role: egress-router

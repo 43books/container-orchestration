@@ -1,0 +1,11 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: allow-8080-and-8443 
+spec:
+  podSelector:
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 8080
+      port: 8443
