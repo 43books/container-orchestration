@@ -1,0 +1,21 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-hostname-deployment
+  labels:
+    app: nginx-hostname
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-hostname
+  template:
+    metadata:
+      labels:
+        app: nginx-hostname
+    spec:
+      containers:
+      - name: nginx-hostname
+        image: stenote/nginx-hostname
+        ports:
+        - containerPort: 80
