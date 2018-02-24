@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: appimage
+  spec:
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+    source:
+      git:
+        uri: https://github.com/43books/ch09-apps.git
+        ref: dev 
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: builderimage:latest
+      type: Source
+    output:
+      to:
+        kind: ImageStreamTag
+        name: appimage:latest
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: appimage
+  spec:
+    template:
+      metadata:
+        labels:
+          name: appimage
+      spec:
+        containers:
+        - name: appimage
+          image: appimage:latest
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+    replicas: 1
+    selector:
+      name: appimage
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - appimage
+        from:
+          kind: ImageStreamTag
+          name: appimage:latest
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: appimage
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+    name: appimage
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: appimage
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: appimage
+  spec:
+    host: 
+    to:
+      kind: Service
+      name: appimage
+

@@ -1,0 +1,39 @@
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  name: ch09-pipeline
+spec:
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        pipeline {
+          agent any
+          stages {
+            stage('01-Build') {
+              steps {
+                openshiftBuild(bldCfg: 'appimage', namespace: 'chapter09', showBuildLogs: 'true')
+              }
+            }
+            stage('02-Deploy-Development') {
+              steps {
+                openshiftDeploy(depCfg: 'appimage', namespace: 'chapter09')
+              }
+            }
+            stage('03-Tag-Image-in-Production') {
+              steps {
+                openshiftTag(namespace: 'chapter09', srcStream: 'appimage', srcTag: 'latest', destinationNamespace: 'chapter09-prd', destStream: 'appimage', destTag: 'latest')
+                openshiftTag(namespace: 'chapter09-prd', srcStream: 'appimage', srcTag: 'prd', destinationNamespace: 'chapter09-prd', destStream: 'appimage', destTag: 'latest')
+              }
+            }
+            stage('04-Deploy-Prodcution') {
+              steps {
+                openshiftDeploy(depCfg: 'appimage', namespace: 'chapter09-prd')
+              }
+            }
+          }
+        }
+  triggers:
+  - type: ImageChange
+  - type: ConfigChange
+

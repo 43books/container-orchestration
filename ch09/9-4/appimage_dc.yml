@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  name: appimage
+spec:
+  template:
+    metadata:
+      labels:
+        name: appimage
+    spec:
+      containers:
+      - name: appimage
+        image: appimage:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+  replicas: 1
+  selector:
+    name: appimage
+  triggers:
+  - type: ConfigChange
+  - type: ImageChange
+    imageChangeParams:
+      automatic: true
+      containerNames:
+      - appimage
+      from:
+        kind: ImageStreamTag
+        name: appimage:latest
+

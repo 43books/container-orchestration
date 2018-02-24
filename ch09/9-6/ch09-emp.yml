@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: emp-php
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: emp-php
+  spec:
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+    source:
+      git:
+        uri: https://github.com/43books/ch09-emp.git
+        ref: master
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: php:7.0
+          namespace: openshift
+      type: Source
+    output:
+      to:
+        kind: ImageStreamTag
+        name: emp-php:latest
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: emp-php
+  spec:
+    template:
+      metadata:
+        labels:
+          name: emp-php
+      spec:
+        containers:
+        - env:
+          - name: POSTGRESQL_USER
+            value: empuser
+          - name: POSTGRESQL_PASSWORD
+            value: emppass
+          - name: POSTGRESQL_DATABASE
+            value: empdb
+          name: emp-php
+          image: emp-php:latest
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+    replicas: 1
+    selector:
+      name: emp-php
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - emp-php
+        from:
+          kind: ImageStreamTag
+          name: emp-php:latest
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+    name: emp-php
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: emp-php
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: emp-php
+  spec:
+    host:
+    to:
+      kind: Service
+      name: emp-php
+

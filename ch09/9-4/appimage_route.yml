@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Route
+metadata:
+  name: appimage
+spec:
+  host: 
+  to:
+    kind: Service
+    name: appimage
+
